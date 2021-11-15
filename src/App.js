@@ -1,38 +1,54 @@
-import { createContext, useContext, useState } from 'react'
+// context solo debe ser usado en aplicaciones pequeñas debido a que cada ves que el contexto cambia
+// este va a renderizar todo lo que este dentro lo que presenta un problema de rendimiento en aplicaciones grandes
+// en ese caso se debe de hacer uso de redux 
+import { createContext, useContext, useState, memo, useCallback } from 'react'
 
-const Context = createContext({valor: false, toggle: () => {}})
+const Context = createContext()
 
-const Provider = ({ children }) => {
-    const [valor, setValor] = useState(false)
-    const value = {
-        valor,
-        toggle: () => setValor(!valor)
-    }
+const ContadorProvider = ({ children }) => {
+    const [contador, setCont] = useState(0)
+
+    const incrementar = useCallback(() => setCont(x => x + 1), [])
+    const decrementar = useCallback(() => setCont(x => x - 1), [])
 
     return (
-        <Context.Provider value={value}>
+        <Context.Provider value={{contador, incrementar, decrementar}}>
             {children}
         </Context.Provider>
     )
 }
 
-const Componente = () => {
-    const {valor, toggle} = useContext(Context)
-
+const Incrementar = memo(() => {
+    console.log("incrementar")
+    const {incrementar} = useContext(Context)
     return (
-        <div>
-            <label>{valor.toString()}</label>
-            <button onClick={toggle}>Toggle</button>
-        </div>
+        <button onClick={incrementar}>Incrementar</button>
+    )
+})
+
+const Decrementar = memo(() => {
+    console.log("incrementar")
+    const {decrementar} = useContext(Context)
+    return (
+        <button onClick={decrementar}>Decrementar</button>
+    )
+})
+
+const Label = () => {
+    console.log("label")
+    const { contador } = useContext(Context)
+    return (
+        <h1>{contador}</h1>
     )
 }
 
-
 const App = () => {
     return (
-        <Provider>
-            <Componente/>
-        </Provider>
+        <ContadorProvider>
+            <Label/>
+            <Incrementar/>
+            <Decrementar/>
+        </ContadorProvider>
     )
 }
 
